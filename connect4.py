@@ -14,11 +14,12 @@ class GameBoard:
             -1:blue
         }
         
+    #drop the specified element into the specified column, and return True. Returns False if the column is full and makes no changes.
     def drop(self, color, column):
         #check if the column is full first
         if self.grid[0,column] != 0:
             print(f'Cannot drop a {color} in full column {column}!')
-            return self.grid
+            return False
         else:
             dropping = True
             current_row = 0
@@ -36,7 +37,7 @@ class GameBoard:
                     
             #assign the color to the spot in the grid
             self.grid[current_row, column] = color
-            return self.grid
+            return True
     
     #converts the grid to plottable colors
     def grid_to_color(self, color_dict_in = None):
@@ -65,7 +66,7 @@ class GameBoard:
 #         ax.set_xticks(np.arange(-.5, 7, 1))
 #         ax.set_yticks(np.arange(-.5, 6, 1))
         plt.grid(True)
-        plt.xticks(np.arange(-.5, 7, 1), labels = [])
+        plt.xticks(np.arange(-.5, 7, 1), labels = range(1,9))
         plt.yticks(np.arange(-.5, 6, 1), labels = [])
 
 
@@ -79,6 +80,8 @@ class ConnectFour(GameBoard):
         self.winning_turn = 0
         self.winner = None
         self.done = False
+        self.last_play = None
+        self.history = []
         
     def reset(self):
         self.grid = np.full(self.shape, 0)
@@ -116,13 +119,20 @@ class ConnectFour(GameBoard):
     #drop the color of the current player and deal with the consequences
     def play(self, column, to_show = False):
         self.turns += 1
-        self.drop(self.players[self.current_player], column)
+        drop_successful = self.drop(self.players[self.current_player], column)
         
-        ##check if state is win
-        self.check_win()
-        self.current_player = (self.current_player+1)%2
+        if drop_successful:
+            self.last_play = [self.players[self.current_player], 'drop', column]
+            ##check if state is win
+            self.check_win()
+            self.current_player = (self.current_player+1)%2
+        else:
+            self.last_play = [self.players[self.current_player], 'attempt', column]
         if to_show:
             self.show()
+        self.history.append(self.last_play)
+        return drop_successful
+        
 
         
     def play_series(self, moves:list = [1,2,3,4,5,6,6,6,5], to_show = False):
