@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 class GameBoard:
     def __init__(self, board_shape = (6,7)):
         self.shape = board_shape
-        self.grid = np.full(board_shape, 0)
+        self.grid = np.full(board_shape, 0, ).astype('float32')
         black = (0.2,0.2,0.2)
         red = (0.9, 0.3,0.3)
         blue = (0.3,0.3,0.9)
@@ -82,6 +82,7 @@ class ConnectFour(GameBoard):
         self.done = False
         self.last_play = None
         self.history = []
+        self.scores = [0,0] #scores for player 0 and player 1
         
     def reset(self):
         self.grid = np.full(self.shape, 0)
@@ -133,14 +134,45 @@ class ConnectFour(GameBoard):
         self.history.append(self.last_play)
         return drop_successful
         
-
+    #checks how many of 'value' are occupied in cells adjacent to grid[row,col]
+    def count_adjacent(self, row, col, value):
+        #check if center cell is on the edge of the grid
+        top = row == 0
+        bottom = row == self.grid.shape[0]-1
+        left = col == 0
+        right = col == self.grid.shape[1]-1
+        
+        #row indices
+        upper_index = row - 1
+        lower_index = row + 1
+        if bottom:
+            lower_index = row
+        elif top:
+            upper_index = row #or just upper_index == 0
+        
+        #column indices
+        left_index = col - 1
+        right_index = col + 1
+        if left:
+            left_index = col
+        elif right:
+            right_index = col
+            
+        #get slice
+        gridslice = self.grid[upper_index:lower_index+1, left_index:right_index + 1]
+        gridtruths = gridslice == value
+        adjacent_count = gridtruths.sum() - (self.grid[row,col] == value) #subtract 1 to not count the center value, if it is the same
+        return adjacent_count
+        
+        
         
     def play_series(self, moves:list = [1,2,3,4,5,6,6,6,5], to_show = False):
         for move in moves:
             self.play(move)
         if to_show:
             self.show()
-        
+
+    
     def check_win(self):
         if self.done:
             print(f'The game already ended with {self.winner} winning in {self.winning_turn} turns.')
