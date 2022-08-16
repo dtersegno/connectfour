@@ -8,6 +8,7 @@ to do:
 - set up playing a game and proper distribution of rewards
     - can the results be added together for a single player when considering rewards?
        or do they have to alternate between two models? likely the first
+      
 - set up gradient descent adjustment to model variables
 - set up repeated games to repeat process of improving plays
 
